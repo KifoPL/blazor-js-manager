@@ -53,9 +53,6 @@ jobs:
         IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
         # Support both workflow_dispatch and PR merge for bump-minor
         BUMP_MINOR="${{ github.event.inputs.bump-minor }}"
-        if [ -z "$BUMP_MINOR" ]; then
-          BUMP_MINOR="${{ github.event.inputs.bump-minor }}"
-        fi
         if [ "$BUMP_MINOR" = 'true' ]; then
           MINOR=$((MINOR+1))
           PATCH=0
