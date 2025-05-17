@@ -18,6 +18,7 @@ internal class JsModuleResolver(
     private readonly ConcurrentDictionary<string, IJSObjectReference> _modules = new();
     private readonly JsModuleResolverOptions _options = options.Value;
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         await Parallel.ForEachAsync(_modules.Values.AsEnumerable(),
