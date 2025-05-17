@@ -20,4 +20,3 @@ jobs:
         run: dotnet build src/BlazorJsManager.sln --no-restore --configuration Release
       - name: Test
         run: dotnet test src/BlazorJsManager.sln --no-build --configuration Release --verbosity normal
-
