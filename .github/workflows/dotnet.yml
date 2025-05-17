@@ -3,25 +3,27 @@
 
 name: .NET
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
     types: [closed]
-
-jobs:
-  build:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-
-    # Add input for minor bump
+  workflow_dispatch:
     inputs:
       bump-minor:
         description: 'Bump minor version instead of patch'
         required: false
         default: 'false'
         type: boolean
+
+jobs:
+  build:
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -33,21 +35,28 @@ jobs:
         dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+    - name: Test
+      run: dotnet test --no-build --configuration Release
     - name: Bump version
       id: bump_version
       run: |
         PROJECT_FILE=$(find src -name '*.csproj' | head -n 1)
+        if [ -z "$PROJECT_FILE" ]; then
+          echo "No .csproj file found!" >&2
+          exit 1
+        fi
         VERSION_LINE=$(grep '<Version>' "$PROJECT_FILE" || echo '')
         if [ -z "$VERSION_LINE" ]; then
-          VERSION_LINE=$(grep '<Version>' "$PROJECT_FILE" || echo '')
-        fi
-        if [ -z "$VERSION_LINE" ]; then
-          VERSION=$(grep -oP '<Version>\K[^<]+' "$PROJECT_FILE" || echo '0.1.0')
+          VERSION="0.1.0"
         else
           VERSION=$(echo "$VERSION_LINE" | grep -oP '<Version>\K[^<]+')
         fi
         IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-        if [ "${{ github.event.inputs.bump-minor }}" = 'true' ]; then
+        # Support both workflow_dispatch and PR merge for bump-minor
+        BUMP_MINOR="${{ github.event.inputs.bump-minor }}"
+        if [ "$BUMP_MINOR" = 'true' ]; then
           MINOR=$((MINOR+1))
           PATCH=0
         else
@@ -61,22 +70,10 @@ jobs:
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add src/*.csproj
-        git commit --amend --no-edit || echo "No changes to commit"
-        git tag -f v${{ steps.bump_version.outputs.new_version }}
-        git push origin HEAD:master --force-with-lease --tags
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Pack NuGet
-      run: dotnet pack --no-build --configuration Release --output nupkg
-    - name: Upload NuGet artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: nuget-package
-        path: nupkg/*.nupkg
-    - name: Publish NuGet package
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: |
-        dotnet nuget push nupkg/*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        git commit -m "Bump version to v${{ steps.bump_version.outputs.new_version }}" || echo "No changes to commit"
+        git tag v${{ steps.bump_version.outputs.new_version }}
+        # Push to release branch instead of master for GitHub flow
+        RELEASE_BRANCH="release/v${{ steps.bump_version.outputs.new_version }}"
+        git checkout -b "$RELEASE_BRANCH"
+        git push origin "$RELEASE_BRANCH" --force-with-lease
+        git push origin v${{ steps.bump_version.outputs.new_version }}
