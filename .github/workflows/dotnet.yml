@@ -35,10 +35,13 @@ jobs:
         dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore
+      working-directory: src/BlazorJsManager
     - name: Build
       run: dotnet build --no-restore --configuration Release
+      working-directory: src/BlazorJsManager
     - name: Test
       run: dotnet test --no-build --configuration Release
+      working-directory: src/BlazorJsManager
     - name: Bump version
       id: bump_version
       run: |
