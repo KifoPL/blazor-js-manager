@@ -60,8 +60,8 @@ internal class JsModuleResolver(
         }
         finally
         {
+            if (semaphoreSlim.CurrentCount == 1) _locks.TryRemove(moduleName, out _);
             semaphoreSlim.Release();
-            if (semaphoreSlim.CurrentCount is 0) _locks.TryRemove(moduleName, out _);
         }
     }
 }
