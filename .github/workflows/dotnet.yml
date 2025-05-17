@@ -28,7 +28,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.PAT_TOKEN }}
+        fetch-depth: 0  # Ensure full history and tags are fetched
+    - name: Fetch all tags
+      run: git fetch --tags --force
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -40,12 +43,19 @@ jobs:
       run: dotnet build --no-restore --configuration Release
       working-directory: src/BlazorJsManager
     - name: Test
-      run: dotnet test --no-build --configuration Release
+      run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
       working-directory: src/BlazorJsManager
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: src/BlazorJsManager/TestResults/
     - name: Bump version
       id: bump_version
       run: |
-        PROJECT_FILE=$(find src -name '*.csproj' | head -n 1)
+        set -e
+        PROJECT_FILE=$(find ./src -name '*.csproj' -print -quit)
         if [ -z "$PROJECT_FILE" ]; then
           echo "No .csproj file found!" >&2
           exit 1
@@ -57,7 +67,6 @@ jobs:
           VERSION=$(echo "$VERSION_LINE" | grep -oP '<Version>\K[^<]+')
         fi
         IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-        # Support both workflow_dispatch and PR merge for bump-minor
         BUMP_MINOR="${{ github.event.inputs.bump-minor }}"
         if [ "$BUMP_MINOR" = 'true' ]; then
           MINOR=$((MINOR+1))
@@ -70,13 +79,14 @@ jobs:
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
     - name: Commit version bump and tag
       run: |
+        set -e
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add src/*.csproj
         git commit -m "Bump version to v${{ steps.bump_version.outputs.new_version }}" || echo "No changes to commit"
         git tag v${{ steps.bump_version.outputs.new_version }}
-        # Push to release branch instead of master for GitHub flow
         RELEASE_BRANCH="release/v${{ steps.bump_version.outputs.new_version }}"
         git checkout -b "$RELEASE_BRANCH"
-        git push origin "$RELEASE_BRANCH" --force-with-lease
+        git push --force-with-lease origin "$RELEASE_BRANCH"
         git push origin v${{ steps.bump_version.outputs.new_version }}
+
