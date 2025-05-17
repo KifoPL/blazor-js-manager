@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorJsManager", "BlazorJsManager\BlazorJsManager.csproj", "{A8271981-2F68-4BCD-BB60-CCC2904E0149}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5631207-0578-4B8D-9AF8-2675D4939329}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorJsManager.Tests", "..\tests\BlazorJsManager.Tests\BlazorJsManager.Tests.csproj", "{0BD48923-1955-4D15-9446-C24250B18208}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,12 @@ Global
 		{A8271981-2F68-4BCD-BB60-CCC2904E0149}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8271981-2F68-4BCD-BB60-CCC2904E0149}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8271981-2F68-4BCD-BB60-CCC2904E0149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BD48923-1955-4D15-9446-C24250B18208}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BD48923-1955-4D15-9446-C24250B18208}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BD48923-1955-4D15-9446-C24250B18208}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BD48923-1955-4D15-9446-C24250B18208}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A8271981-2F68-4BCD-BB60-CCC2904E0149} = {A5631207-0578-4B8D-9AF8-2675D4939329}
 	EndGlobalSection
 EndGlobal
