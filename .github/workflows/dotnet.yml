@@ -14,11 +14,15 @@ on:
     types: [closed]
   workflow_dispatch:
     inputs:
-      bump-minor:
-        description: 'Bump minor version instead of patch'
+      bump-type:
+        description: 'Version part to bump (major, minor, patch)'
         required: false
-        default: 'false'
-        type: boolean
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
 
 jobs:
   build:
@@ -43,7 +47,9 @@ jobs:
       run: dotnet build --no-restore --configuration Release
       working-directory: src/BlazorJsManager
     - name: Test
-      run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
+      run: |
+        mkdir -p src/BlazorJsManager/TestResults
+        dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory src/BlazorJsManager/TestResults
       working-directory: src/BlazorJsManager
     - name: Upload test results
       if: always()
@@ -67,13 +73,21 @@ jobs:
           VERSION=$(echo "$VERSION_LINE" | grep -oP '<Version>\K[^<]+')
         fi
         IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-        BUMP_MINOR="${{ github.event.inputs.bump-minor }}"
-        if [ "$BUMP_MINOR" = 'true' ]; then
-          MINOR=$((MINOR+1))
-          PATCH=0
-        else
-          PATCH=$((PATCH+1))
-        fi
+        BUMP_TYPE="${{ github.event.inputs.bump-type }}"
+        case "$BUMP_TYPE" in
+          major)
+            MAJOR=$((MAJOR+1))
+            MINOR=0
+            PATCH=0
+            ;;
+          minor)
+            MINOR=$((MINOR+1))
+            PATCH=0
+            ;;
+          *)
+            PATCH=$((PATCH+1))
+            ;;
+        esac
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
         sed -i "s|<Version>.*</Version>|<Version>$NEW_VERSION</Version>|" "$PROJECT_FILE"
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
@@ -89,4 +103,3 @@ jobs:
         git checkout -b "$RELEASE_BRANCH"
         git push origin "$RELEASE_BRANCH"
         git push origin v${{ steps.bump_version.outputs.new_version }}
-
