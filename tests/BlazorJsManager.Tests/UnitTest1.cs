@@ -2,9 +2,10 @@
 
 public class UnitTest1
 {
-    [Fact]
-    public void Test1()
+    [Test]
+    public async Task Test1()
     {
-        Assert.True(true);
+        bool result = string.IsNullOrWhiteSpace("");
+        await Assert.That(result).IsEqualTo(true);
     }
 }
