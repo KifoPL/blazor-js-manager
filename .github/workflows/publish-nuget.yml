@@ -35,3 +35,13 @@ jobs:
         working-directory: src/BlazorJsManager
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.event.head_commit.message }}
+          body: ${{ github.event.head_commit.message }}
+          target_commitish: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
