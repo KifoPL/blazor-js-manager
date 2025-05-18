@@ -86,6 +86,17 @@ jobs:
             PATCH=$((PATCH+1))
             ;;
         esac
+        # Auto-bump PATCH if tag exists
+        MAX_ITERATIONS=100
+        ITERATION_COUNT=0
+        while git rev-parse -q --verify "refs/tags/v$MAJOR.$MINOR.$PATCH" >/dev/null; do
+          PATCH=$((PATCH+1))
+          ITERATION_COUNT=$((ITERATION_COUNT+1))
+          if [ "$ITERATION_COUNT" -ge "$MAX_ITERATIONS" ]; then
+            echo "Error: Maximum iteration limit reached while bumping PATCH version." >&2
+            exit 1
+          fi
+        done
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
         sed -i "s|<Version>.*</Version>|<Version>$NEW_VERSION</Version>|" "$PROJECT_FILE"
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
@@ -101,3 +112,4 @@ jobs:
         git checkout -b "$RELEASE_BRANCH"
         git push --force-with-lease origin "$RELEASE_BRANCH"
         git push origin v${{ steps.bump_version.outputs.new_version }}
+
