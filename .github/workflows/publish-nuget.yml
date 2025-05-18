@@ -56,3 +56,17 @@ jobs:
           asset_path: ./src/BlazorJsManager/nupkg/*.nupkg
           asset_name: BlazorJsManager.${{ github.ref_name }}.nupkg
           asset_content_type: application/octet-stream
+      - name: Merge release branch onto master and push
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          RELEASE_BRANCH=$(echo ${{ github.ref_name }} | sed 's/^v//')
+          git fetch origin master
+          git checkout master
+          git pull origin master
+          git fetch origin $RELEASE_BRANCH:$RELEASE_BRANCH || true
+          git merge $RELEASE_BRANCH
+          git push origin master
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
