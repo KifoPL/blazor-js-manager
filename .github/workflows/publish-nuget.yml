@@ -59,7 +59,7 @@ jobs:
           asset_path: src/BlazorJsManager/nupkg/BlazorJsManager.${{ env.VERSION }}.nupkg
           asset_name: BlazorJsManager.${{ env.VERSION }}.nupkg
           asset_content_type: application/octet-stream
-      - name: Merge tag onto master and push
+      - name: Merge release branch onto master and push
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -67,8 +67,9 @@ jobs:
           git fetch origin master
           git checkout master
           git pull origin master
-          git fetch --tags
-          git merge --no-ff ${{ github.ref_name }}
+          RELEASE_BRANCH=release/${{ github.ref_name }}
+          git fetch origin $RELEASE_BRANCH:$RELEASE_BRANCH
+          git merge --no-ff $RELEASE_BRANCH
           git push origin master
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
