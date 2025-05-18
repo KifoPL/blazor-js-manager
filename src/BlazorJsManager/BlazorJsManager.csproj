@@ -12,6 +12,7 @@
         <PackageIcon>icon.png</PackageIcon>
         <RepositoryUrl>https://github.com/KifoPL/blazor-js-manager</RepositoryUrl>
         <Company>KifoPL</Company>
+    <Version>0.1.4</Version>
     </PropertyGroup>
 
     <ItemGroup>
