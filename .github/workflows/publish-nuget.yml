@@ -49,11 +49,12 @@ jobs:
           prerelease: false
       - name: Upload Nupkg to Release
         uses: actions/upload-release-asset@v1
+        working-directory: src/BlazorJsManager
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./src/BlazorJsManager/nupkg/*.nupkg
+          asset_path: ./nupkg/BlazorJsManager.${{ github.ref_name }}.nupkg
           asset_name: BlazorJsManager.${{ github.ref_name }}.nupkg
           asset_content_type: application/octet-stream
       - name: Merge release branch onto master and push
