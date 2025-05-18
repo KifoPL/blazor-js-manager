@@ -98,8 +98,18 @@ jobs:
           fi
         done
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-        sed -i "s|<Version>.*</Version>|<Version>$NEW_VERSION</Version>|" "$PROJECT_FILE"
+        if grep -q '<Version>' "$PROJECT_FILE"; then
+          sed -i "s|<Version>.*</Version>|<Version>$NEW_VERSION</Version>|" "$PROJECT_FILE"
+        else
+          # Insert <Version> after <Company> or at the end of the first <PropertyGroup>
+          awk -v ver="$NEW_VERSION" '/<Company>/{print; print "    <Version>"ver"</Version>"; next}1' "$PROJECT_FILE" > tmp && mv tmp "$PROJECT_FILE"
+        fi
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        # Remove old .nupkg files in the nupkg directory
+        NUPKG_DIR="$(dirname $PROJECT_FILE)/nupkg"
+        if [ -d "$NUPKG_DIR" ]; then
+          find "$NUPKG_DIR" -name '*.nupkg' -exec rm {} +
+        fi
     - name: Commit version bump and tag
       run: |
         set -e
