@@ -1,7 +1,15 @@
 # blazor-js-manager
 
+Latest version:
+
 [![NuGet Version](https://img.shields.io/nuget/v/BlazorJsManager.svg?style=flat&logo=nuget)](https://www.nuget.org/packages/BlazorJsManager)
-[![Build Status](https://github.com/OpDev/blazor-js-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/OpDev/blazor-js-manager/actions/workflows/ci.yml)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/KifoPL/blazor-js-manager/latest)
+
+Status:
+
+[![CodeQL](https://github.com/KifoPL/blazor-js-manager/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/KifoPL/blazor-js-manager/actions/workflows/github-code-scanning/codeql)
+[![Dependabot Updates](https://github.com/KifoPL/blazor-js-manager/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/KifoPL/blazor-js-manager/actions/workflows/dependabot/dependabot-updates)
+
 
 Small package that adds services that make managing and invoking JS scripts in Blazor a breeze.
 
@@ -37,24 +45,18 @@ builder.Services.AddJsModuleResolver();
 
     protected override async Task OnInitializedAsync()
     {
-        _module = await JsModuleResolver.ResolveAsync("./js/myModule.js");
+        _module = await JsModuleResolver.ResolveAsync("myModule");
         await _module.InvokeVoidAsync("myJsFunction");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_module is not null)
-            await _module.DisposeAsync();
     }
 }
 ```
 
-3. **Options**: You can configure options via `AddJsModuleResolver(options => { ... })`.
+3. **Options**: You can configure options via `AddJsModuleResolver(configure: options => { ... })`.
 
 ## API
 - `IJsModuleResolver.ResolveAsync(string path)` – Loads a JS module and returns an `IJSObjectReference`.
 - Extension methods for common scenarios (see source for details).
 
-## License
+## License ![GitHub License](https://img.shields.io/github/license/KifoPL/blazor-js-manager)
 
-MIT
+See [License](LICENSE) for details.
