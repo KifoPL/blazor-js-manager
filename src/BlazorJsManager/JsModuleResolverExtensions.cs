@@ -13,14 +13,14 @@ public static class JsModuleResolverExtensions
     /// </summary>
     /// <param name="services">The service collection to add the resolver to.</param>
     /// <param name="optionsPath">The configuration section path for <see cref="JsModuleResolverOptions"/>. If null, uses the default path.</param>
-    /// <param name="postConfigure">An optional delegate to further configure <see cref="JsModuleResolverOptions"/> after binding.</param>
+    /// <param name="configure">An optional delegate to further configure <see cref="JsModuleResolverOptions"/> after binding.</param>
     /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddJsModuleResolver(this IServiceCollection services, string? optionsPath = null,
-        Action<JsModuleResolverOptions>? postConfigure = null)
+        Action<JsModuleResolverOptions>? configure = null)
     {
         services.AddOptions<JsModuleResolverOptions>()
             .BindConfiguration(optionsPath ?? JsModuleResolverOptions.DefaultOptionsPath)
-            .PostConfigure(postConfigure ?? (_ => { }));
+            .PostConfigure(configure ?? (_ => { }));
 
         services.TryAddScoped<IJsModuleResolver, JsModuleResolver>();
 
